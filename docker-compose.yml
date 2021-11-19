@@ -1,0 +1,42 @@
+version: '2.1'
+services:
+    lab3:
+      image: thomaslacaze/lab3
+      container_name: lab3
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+      restart: unless-stopped
+      environment: 
+        - REACT_APP_BACKEND_URL=${BACKEND_URL}
+      ports:
+        - 3000:3000
+
+    lab2:
+      image: thomaslacaze/lab2
+      container_name: lab2
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+      restart: unless-stopped
+      environment: 
+        - ENV=dev
+        - DB_HOST=${DB_HOST}
+        - DB_PORT=${DB_PORT}
+        - DB_USER${DB_USER}
+        - DB_PASSWORD=${DB_PASSWORD}
+        - DB_NAME=${DB_NAME}
+
+    lab1:
+      image: thomaslacaze/lab1
+      container_name: lab1
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+      restart: unless-stopped
+      environment:
+        - backendA=http://lab2:8081
+        - DATASOURCE_DB_PASSWORD=${DATASOURCE_DB_PASSWORD}
+        - DATASOURCE_DB_USERNAME=$DATASOURCE_DB_USERNAME}
+        - DATASOURCE_DB_URL=$DATASOURCE_DB_URL}
+      ports:
+        - 8080:8080
+      links:
+        - lab2
