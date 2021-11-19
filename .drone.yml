@@ -12,6 +12,7 @@ steps:
   image: plass/mdtopdf
   commands:
   - mdtopdf /drone/src/README.md
+  - ls /drone/src/
   when:
     branch:
     - master
