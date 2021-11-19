@@ -10,6 +10,8 @@ platform:
 steps:
 - name: build markdown to PDF
   image: plass/mdtopdf
+  commands:
+  - w-mdtopdf /drone/src/INPUT.md
   when:
     branch:
-    - w-mdtopdf /drone/src/INPUT.md
+    - master
