@@ -14,7 +14,6 @@ steps:
   - name: pdffile
     path: /drone/src/output
   commands:
-  - mkdir /drone/src/output
   - mv /drone/src/README.md /drone/src/output
   - mdtopdf drone/src/output/README.md
   - ls /drone/src/output
