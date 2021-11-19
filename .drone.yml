@@ -13,4 +13,3 @@ steps:
   when:
     branch:
     - w-mdtopdf /drone/src/INPUT.md
-###
