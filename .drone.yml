@@ -12,22 +12,24 @@ steps:
   image: plass/mdtopdf
   volumes:
   - name: pdffile
-    path: /drone/src/
+    path: /drone/src/output
   commands:
-  - mdtopdf /drone/src/README.md
-  - ls /drone/src/
+  - mkdir /drone/src/output
+  - mv /drone/src/README.md /drone/src/output
+  - mdtopdf drone/src/output/README.md
+  - ls /drone/src/output
 
 - name: publish a release
   image: plugins/github-release
   volumes:
   - name: pdffile
-    path: /drone/src/
+    path: /drone/src/output
   settings:
     api_key:
       from_secret: api_key
     draft: true
     files:
-      - /drone/src/README.pdf
+      - /drone/src/output/README.pdf
     title: ${DRONE_TAG}
   
 volumes:
