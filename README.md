@@ -6,15 +6,26 @@ All code source is available at [Github](https://github.com/Cloud-Integration-20
 ## Lab1 - Java API Rest
 Using Spring boot, Hibernate and JPA with PostgreSQL, Swagger
 
+CRUD operations on movies. With CircuitBreaker, Retry and Timeout
+
 
 There are two version of this API:
-- V1: 
-- V2: 
+- V1: Using CircuitBreaker, Retry, TimeLimiter with annotations. All endpoints disposes of a circuit breaker, retry and only *getAll* and *getById* has TimeLimiter. </br>
+Due to TimeLimiter integration tests needs to be asynchronous. </br>
+So in fact, Spring root all traffic to service B. If service B is down, the circuit breaker will open. And request will be sent to himself.
+
+- V2: Using CircuitBreaker as we saw in *spring-boot-sample*. So all crud operations are managed by Spring boot with no circuitbreaker. </br>
+Only *getAll* and *getById* are managed by CircuitBreaker : all informations from Movie using JPA repository, but actors list will be managed by service B. </br> If service B is down, the circuit breaker will open. And request will be sent to himself with default list of actors. 
+
+
+Each version has a different integration test. No unit test due to using JPA default repository.
+
+Integration, building image, pushing image to registry are done with CI.  
 
 ## Lab2 - Golang API Rest
 Using Gin framework, Gorm with PostgreSQL
 
-It's a replication of the previous API but in Golang.
+It's a replication of the previous API but in Golang. With CRUD operations on movies.
 
 ```go
 	r.GET("/movies", DB.FindMovies)
@@ -30,16 +41,25 @@ But with a new endpoint for actors and no persistent storage of actors : Geneart
 	r.GET("/actors/:id", v2.FindActorsByMovieId)
 ```
 
+Integration, building image, pushing image to registry are done with CI.  
+
 ## Lab3 - React Web App
 
 
+Integration, building image, pushing image to registry are done with CI.  
+
+SCREEN HERE
+
 ## Lab4 - Deploy to AWS
-
-
 ### Deploy to S3
 
+Deploy to S3 with CI.
+
+SCREEN HERE
 
 ### Deploy to Beanstalk
+
+SCREEN HERE
 
 ## Installation Steps
 
