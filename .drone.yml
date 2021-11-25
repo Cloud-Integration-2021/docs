@@ -10,8 +10,31 @@ platform:
 steps:
 - name: build markdown to PDF
   image: plass/mdtopdf
+  volumes:
+  - name: pdffile
+    path: /drone/src/output
   commands:
-  - w-mdtopdf /drone/src/INPUT.md
-  when:
-    branch:
-    - master
+  - mv /drone/src/README.md /drone/src/output
+  - mdtopdf /drone/src/output/README.md
+  - ls /drone/src/output
+
+- name: publish a release
+  image: plugins/github-release
+  volumes:
+  - name: pdffile
+    path: /drone/src/output
+  settings:
+    api_key:
+      from_secret: api_key
+    draft: true
+    files:
+      - /drone/src/output/README.pdf
+    title: ${DRONE_TAG}
+  
+volumes:
+- name: pdffile
+  temp: {}
+
+trigger:
+  event:
+  - tag
