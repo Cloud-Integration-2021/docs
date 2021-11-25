@@ -1,3 +1,9 @@
+---
+title: 'Cloud Integration docs'
+author: 'Thomas LACAZE'
+date: 25/11/2021
+---
+
 # Cloud Integration - Thomas LACAZE - M2 2022
 *This document is generated automatically at each commit thanks to Drone CI*
 See here for more information about CI : https://drone.io/
@@ -81,7 +87,7 @@ There are 3 pipelines :
 
 - *Deploy to S3* : trigger on every promote. This pipeline will build application and use static build to push it to S3.
 
-Promote is done in Drone UI. See here](https://readme.drone.io/promote/)
+Promote is done in Drone UI. [See here](https://readme.drone.io/promote/)
 
 ## Lab4 - Deploy to AWS
 ### Deploy to S3
@@ -101,15 +107,16 @@ SCREEN HERE
 * Docker
 * Docker-compose
 
-### Download docker-compose.yml
+### Clone repo
 
 ```bash
-$ curl -L https://raw.githubusercontent.com/Cloud-Integration-2021/lab-4/master/docker-compose.yml > docker-compose.yml
+$ git clone https://github.com/Cloud-Integration-2021/docs
+$ cd docs
 ```
 
 ### Fill all environment variables .env
 
-```
+```bash
 CLOUDINTEGRATION_DB_HOST=**
 CLOUDINTEGRATION_DB_PORT=**
 CLOUDINTEGRATION_DB_USER=**
@@ -126,7 +133,6 @@ CLOUDINTEGRATION_DATASOURCE_DB_URL_LAB1=jdbc:postgresql://**:**/**
 $ docker-compose up
 ```
 
-You are all set!
-
 ## License
-<a href="https://github.com/Cloud-Integration-2021/docs/blob/master/LICENSE">MIT</a>
+
+[MIT](https://github.com/Cloud-Integration-2021/docs/blob/master/LICENSE)
