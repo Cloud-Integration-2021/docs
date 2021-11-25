@@ -6,21 +6,30 @@ All code source is available at [Github](https://github.com/Cloud-Integration-20
 ## Lab1 - Java API Rest
 Using Spring boot, Hibernate and JPA with PostgreSQL, Swagger
 
-CRUD operations on movies. With CircuitBreaker, Retry and Timeout
+CRUD operations on movies. With CircuitBreaker, Retry and Timeout. 
+
+Each version has a different integration test. No unit test decause we used JPA default repository.
+
+------Integration, building image, pushing image to registry are done with CI.  
 
 
 There are two version of this API:
-- V1: Using CircuitBreaker, Retry, TimeLimiter with annotations. All endpoints disposes of a circuit breaker, retry and only *getAll* and *getById* has TimeLimiter. </br>
-Due to TimeLimiter integration tests needs to be asynchronous. </br>
+
+### V1
+Using CircuitBreaker, Retry, TimeLimiter with annotations. All endpoints disposes of a circuit breaker, retry and only *getAll* and *getById* has TimeLimiter.
+
+Due to TimeLimiter integration tests needs to be asynchronous.
+
 So in fact, Spring root all traffic to service B. If service B is down, the circuit breaker will open. And request will be sent to himself.
 
-- V2: Using CircuitBreaker as we saw in *spring-boot-sample*. So all crud operations are managed by Spring boot with no circuitbreaker. </br>
-Only *getAll* and *getById* are managed by CircuitBreaker : all informations from Movie using JPA repository, but actors list will be managed by service B. </br> If service B is down, the circuit breaker will open. And request will be sent to himself with default list of actors. 
+### V2
 
+Using CircuitBreaker as we saw in *spring-boot-sample*. So all crud operations are managed by Spring boot with no circuitbreaker.
 
-Each version has a different integration test. No unit test due to using JPA default repository.
+Only *getAll* and *getById* are managed by CircuitBreaker : all informations from Movie using JPA repository, but actors list will be managed by service B. 
 
-Integration, building image, pushing image to registry are done with CI.  
+If service B is down, the circuit breaker will open. And request will be sent to himself with default list of actors. 
+
 
 ## Lab2 - Golang API Rest
 Using Gin framework, Gorm with PostgreSQL
