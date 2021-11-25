@@ -1,42 +1,57 @@
 version: '2.1'
 services:
     lab3:
-      image: thomaslacaze/lab3
+      image: thomaslacaze/lab3:1.0.0
       container_name: lab3
       volumes:
         - /etc/localtime:/etc/localtime:ro
       restart: unless-stopped
       environment: 
-        - REACT_APP_BACKEND_URL=${BACKEND_URL}
+        - REACT_APP_BACKEND_URL=https://lab1:8080
       ports:
-        - 3000:3000
+        - 3020:3000
+      networks:
+        - internal
+        - external
 
     lab2:
-      image: thomaslacaze/lab2
+      image: thomaslacaze/lab2:1.0.0
       container_name: lab2
       volumes:
         - /etc/localtime:/etc/localtime:ro
       restart: unless-stopped
       environment: 
         - ENV=dev
-        - DB_HOST=${DB_HOST}
-        - DB_PORT=${DB_PORT}
-        - DB_USER${DB_USER}
-        - DB_PASSWORD=${DB_PASSWORD}
-        - DB_NAME=${DB_NAME}
+        - DB_HOST=${CLOUDINTEGRATION_DB_HOST}
+        - DB_PORT=${CLOUDINTEGRATION_DB_PORT}
+        - DB_USER=${CLOUDINTEGRATION_DB_USER}
+        - DB_PASSWORD=${CLOUDINTEGRATION_DB_PASSWORD}
+        - DB_NAME=${CLOUDINTEGRATION_DB_NAME_LAB2}
+      networks:
+        - internal
 
     lab1:
-      image: thomaslacaze/lab1
+      image: thomaslacaze/lab1:1.0.0
       container_name: lab1
       volumes:
         - /etc/localtime:/etc/localtime:ro
       restart: unless-stopped
       environment:
         - backendA=http://lab2:8081
-        - DATASOURCE_DB_PASSWORD=${DATASOURCE_DB_PASSWORD}
-        - DATASOURCE_DB_USERNAME=$DATASOURCE_DB_USERNAME}
-        - DATASOURCE_DB_URL=$DATASOURCE_DB_URL}
+        - DATASOURCE_DB_PASSWORD=${CLOUDINTEGRATION_DB_PASSWORD}
+        - DATASOURCE_DB_USERNAME=${CLOUDINTEGRATION_DB_USER}
+        - DATASOURCE_DB_URL=${CLOUDINTEGRATION_DATASOURCE_DB_URL_LAB1}
+      depends_on:
+        - lab2
       ports:
         - 8080:8080
-      links:
-        - lab2
+      networks:
+        - internal
+        - external
+
+
+networks:
+  internal:
+    external: false
+  external:
+    external: true
