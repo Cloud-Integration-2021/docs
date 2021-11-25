@@ -18,8 +18,6 @@ There are two version of this API:
 ### V1
 Using CircuitBreaker, Retry, TimeLimiter with annotations. All endpoints disposes of a circuit breaker, retry and only *getAll* and *getById* has TimeLimiter.
 
-Due to TimeLimiter integration tests needs to be asynchronous.
-
 So in fact, Spring root all traffic to service B. If service B is down, the circuit breaker will open. And request will be sent to himself.
 
 ### V2
@@ -29,6 +27,12 @@ Using CircuitBreaker as we saw in *spring-boot-sample*. So all crud operations a
 Only *getAll* and *getById* are managed by CircuitBreaker : all informations from Movie using JPA repository, but actors list will be managed by service B. 
 
 If service B is down, the circuit breaker will open. And request will be sent to himself with default list of actors. 
+
+### Integration tests
+
+Due to TimeLimiter integration tests needs to be asynchronous.
+
+Spring profile to use H2 in tests 
 
 
 ## Lab2 - Golang API Rest
