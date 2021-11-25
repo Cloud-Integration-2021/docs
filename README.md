@@ -41,7 +41,7 @@ But with a new endpoint for actors and no persistent storage of actors : Geneart
 
 ### Deploy to Beanstalk
 
-## 🛠️ Installation Steps
+## Installation Steps
 
 ### Prerequisites
 * Docker
@@ -72,6 +72,7 @@ CLOUDINTEGRATION_DATASOURCE_DB_URL_LAB1=jdbc:postgresql://**:**/**
 $ docker-compose up
 ```
 
-🌟 You are all set!
+You are all set!
+
 ## License
 <a href="https://github.com/Cloud-Integration-2021/docs/blob/master/LICENSE">MIT</a>
