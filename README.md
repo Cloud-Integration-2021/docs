@@ -1,21 +1,18 @@
 # Cloud Integration - Thomas LACAZE - M2 2022
 *This document is generated automatically at each commit thanks to Drone CI*
+See here for more information about CI : https://drone.io/
 
 All code source is available at [Github](https://github.com/Cloud-Integration-2021). Each lab has a readme and a installation steps
 
 ## Lab1 - Java API Rest
-Using Spring boot, Hibernate and JPA with PostgreSQL, Swagger
+*Using Spring boot, Hibernate and JPA with PostgreSQL, Swagger*
 
 CRUD operations on movies. With CircuitBreaker, Retry and Timeout. 
-
-Each version has a different integration test. No unit test decause we used JPA default repository.
-
-------Integration, building image, pushing image to registry are done with CI.  
-
 
 There are two version of this API:
 
 ### V1
+
 Using CircuitBreaker, Retry, TimeLimiter with annotations. All endpoints disposes of a circuit breaker, retry and only *getAll* and *getById* has TimeLimiter.
 
 So in fact, Spring root all traffic to service B. If service B is down, the circuit breaker will open. And request will be sent to himself.
@@ -30,13 +27,19 @@ If service B is down, the circuit breaker will open. And request will be sent to
 
 ### Integration tests
 
+Each version has a different integration test. No unit test decause we used JPA default repository.
+
 Due to TimeLimiter integration tests needs to be asynchronous.
 
 Spring profile to use H2 in tests 
 
 
+### CI 
+
+------Integration, building image, pushing image to registry are done with CI.  
+
 ## Lab2 - Golang API Rest
-Using Gin framework, Gorm with PostgreSQL
+*Using Gin framework, Gorm with PostgreSQL*
 
 It's a replication of the previous API but in Golang. With CRUD operations on movies.
 
@@ -56,15 +59,33 @@ But with a new endpoint for actors and no persistent storage of actors : Geneart
 
 Integration, building image, pushing image to registry are done with CI.  
 
+### CI 
+
 ## Lab3 - React Web App
+*Using tailwind*
 
-
-Integration, building image, pushing image to registry are done with CI.  
+Web UI using V1 routes from API without actors list. So there are CircuitBreaker and Retry on each route.
 
 SCREEN HERE
 
+
+### CI 
+
+[See here](https://raw.githubusercontent.com/Cloud-Integration-2021/lab3/main/.drone.yml)
+
+There are 3 pipelines :
+
+- *Build* : trigger on every action expect promote. This pipeline will build app with yarn.
+
+- *Deploy docker container & readme* : trigger on every action in branch main except promote on main. This pipeline will deploy docker container and update repo readme to dockerhub.
+
+- *Deploy to S3* : trigger on every promote. This pipeline will build application and use static build to push it to S3.
+
+Promote is done in Drone UI. See here](https://readme.drone.io/promote/)
+
 ## Lab4 - Deploy to AWS
 ### Deploy to S3
+
 
 Deploy to S3 with CI.
 
