@@ -16,7 +16,6 @@ steps:
   commands:
   - mv /drone/src/README.md /drone/src/output
   - mdtopdf /drone/src/output/README.md
-  - ls /drone/src/output
 
 - name: publish a release
   image: plugins/github-release
