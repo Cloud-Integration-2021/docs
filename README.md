@@ -7,7 +7,7 @@ date: 25/11/2021
 *This document is generated automatically at each commit thanks to Drone CI*
 See here for more information about CI : https://drone.io/
 
-All code source is available at **[Github](https://github.com/Cloud-Integration-2021)**. Each lab has a readme and a installation steps
+All code source is available at **[Github](https://github.com/Cloud-Integration-2021)**, each lab has a readme and a installation steps
 
 ![Stack](images/stack.png)
 
@@ -26,24 +26,155 @@ So in fact, Spring root all traffic to service B. If service B is down, the circ
 
 ## V2
 
-Using CircuitBreaker as we saw in *spring-boot-sample*. So all crud operations are managed by Spring boot with no circuitbreaker.
+Using CircuitBreaker as we saw in *spring-boot-sample*. So all crud operations are managed by Spring boot with no circuitbreaker except *getAll* and *getById*. 
 
-Only *getAll* and *getById* are managed by CircuitBreaker : all informations from Movie using JPA repository, but actors list will be managed by service B. 
+They are managed by CircuitBreaker : all informations from Movie using JPA repository, but actors list will be managed by service B. 
 
 If service B is down, the circuit breaker will open. And request will be sent to himself with default list of actors. 
 
+If service B (provide actors list) is up, the circuit breaker will close. And request will be sent to service B : 
+
+```json
+[
+  {
+    "id": 26,
+    "title": "Interstellar",
+    "releaseDate": "2014-10-07",
+    "plot": "Interstellar is a 2014 epic science fiction film co-written, directed and produced by Christopher Nolan. It stars Matthew McConaughey, Anne Hathaway, Jessica Chastain, Bill Irwin, Ellen Burstyn, and Michael Caine.",
+    "actors": [
+      {
+        "firstName": "Ellen",
+        "lastName": "Burstyn",
+        "birthDate": "1992-02-12"
+      }
+    ]
+  }
+]
+```
+
+But if the service B is down, the circuit breaker will open. And request will be sent to himself. With default actors list.
+
+```json
+[
+  {
+    "id": 26,
+    "title": "Interstellar",
+    "releaseDate": "2014-10-07",
+    "plot": "Interstellar is a 2014 epic science fiction film co-written, directed and produced by Christopher Nolan. It stars Matthew McConaughey, Anne Hathaway, Jessica Chastain, Bill Irwin, Ellen Burstyn, and Michael Caine.",
+    "actors": [
+      {
+        "firstName": "Doe",
+        "lastName": "John",
+        "birthDate": "2020-12-22"
+      }
+    ]
+  }
+]
+```
+
+
+```java
+private static List<ActorDTO> defaultActors() {
+	return List.of(new ActorDTO("Doe", "John", "2020-12-22"));
+}
+```
+
 ## Integration tests
 
-Each version has a different integration test. No unit test decause we used JPA default repository.
+Each version has a different integration test. No unit test decause we using JPA default repository.
 
-Due to TimeLimiter integration tests needs to be asynchronous.
+Due to TimeLimiter, integration tests needs to be asynchronous.
 
-Spring profile to use H2 in tests 
+V1 Tests **[see more](https://github.com/Cloud-Integration-2021/lab1/blob/master/src/test/java/fr/lacazethomas/lab1/MovieControllerIntegrationTest.java)**:
+```java
+@Test
+public void getMovies() throws Exception {
+	// Given
+	var m1 = new Movie("je suis un title", LocalDate.of(2020, 1, 8), "je suis un plot");
+	repository.save(m1);
+	var m2 = new Movie("test2", LocalDate.of(2020, 1, 8), "test2plot");
+	repository.save(m2);
 
+	// When
+	MvcResult mvcResult = mvc.perform(
+					get(BaseURL+"/movies")
+							.contentType(MediaType.APPLICATION_JSON)
+			)
+			.andExpect(request().asyncStarted())
+			.andDo(MockMvcResultHandlers.log())
+			.andReturn();
+	// Then
+	mvc.perform(asyncDispatch(mvcResult))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$", hasSize(2)))
+			.andExpect(jsonPath("$[0].title", is("je suis un title")))
+			.andExpect(jsonPath("$[0].id", notNullValue()))
+			.andExpect(jsonPath("$[0].releaseDate", is("2020-01-08")))
+			.andExpect(jsonPath("$[0].plot", is("je suis un plot")))
+			.andExpect(jsonPath("$[1].title", is("test2")))
+			.andExpect(jsonPath("$[1].plot", is("test2plot")))
+			.andExpect(jsonPath("$[1].releaseDate", is("2020-01-08")));
+}
+```
+
+The same test in V2 with actors testing **[see more](https://github.com/Cloud-Integration-2021/lab1/blob/master/src/test/java/fr/lacazethomas/lab1/MovieV2ControllerIntegrationTest.java)**:
+
+```java
+@Test
+public void getMoviesWithActors() throws Exception {
+	// Given
+
+
+	var m1 = new Movie("je suis un title", LocalDate.of(2020, 1, 8), "je suis un plot");
+	repository.save(m1);
+	var m2 = new Movie("test2", LocalDate.of(2020, 1, 8), "test2plot");
+	repository.save(m2);
+
+	// When
+	mvc.perform(
+					get(BaseURL+"/movies")
+							.contentType(MediaType.APPLICATION_JSON)
+			)
+
+			// Then
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$", hasSize(2)))
+			.andExpect(jsonPath("$[0].title", is("je suis un title")))
+			.andExpect(jsonPath("$[0].id", notNullValue()))
+			.andExpect(jsonPath("$[0].releaseDate", is("2020-01-08")))
+			.andExpect(jsonPath("$[0].plot", is("je suis un plot")))
+			.andExpect(jsonPath("$[1].title", is("test2")))
+			.andExpect(jsonPath("$[1].plot", is("test2plot")))
+			.andExpect(jsonPath("$[1].actors[0].firstName", is("Doe")))
+			.andExpect(jsonPath("$[1].actors[0].lastName", is("John")))
+			.andExpect(jsonPath("$[1].actors[0].birthDate", is("2020-12-22")))
+			.andExpect(jsonPath("$[1].releaseDate", is("2020-01-08")));
+}
+```
+
+Using a remote database in a CI can cause problems. This is why we have chosen to have two spring profiles. One that allows tests to be run in an H2 database and another by default that allows the use of PostgreSQL. 
+
+In **[/src/test/resources/application.yml](https://github.com/Cloud-Integration-2021/lab1/blob/master/src/test/resources/application.yml)** :
+```yml
+spring:
+  datasource:
+    driver-class-name: "org.h2.Driver"
+    url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1
+    username: sa
+    password: sa
+```
+
+And define in Tests classes : 
+```java
+@ActiveProfiles("test")
+@SpringBootTest
+public class MovieV2ControllerIntegrationTest {}
+```
 
 ## CI 
 
-**[See here](https://raw.githubusercontent.com/Cloud-Integration-2021/lab1/main/.drone.yml)**
+**[See here](https://github.com/Cloud-Integration-2021/lab1/blob/main/.drone.yml)**
+
 ------Integration, building image, pushing image to registry are done with CI.  
 
 # Lab2 - Golang API Rest
@@ -69,7 +200,7 @@ Integration, building image, pushing image to registry are done with CI.
 
 ## CI 
 
-**[See here](https://raw.githubusercontent.com/Cloud-Integration-2021/lab2/main/.drone.yml)**
+**[See here](https://github.com/Cloud-Integration-2021/lab2/blob/main/.drone.yml)**
 
 ## Lab3 - React Web App
 *Using tailwind*
@@ -81,7 +212,7 @@ SCREEN HERE
 
 ## CI 
 
-**[See here](https://raw.githubusercontent.com/Cloud-Integration-2021/lab3/main/.drone.yml)**
+**[See here](https://github.com/Cloud-Integration-2021/lab3/blob/main/.drone.yml)**
 
 There are 3 pipelines :
 
@@ -96,10 +227,54 @@ There are 3 pipelines :
 # Lab4 - Deploy to AWS
 ## Deploy to S3
 
+**[See here](https://github.com/Cloud-Integration-2021/lab3/blob/main/.drone.yml)**
 
-Deploy to S3 with CI.
+```yml
+trigger:
+  event:
+  - promote
+```
 
-SCREEN HERE
+We want the pipeline to be triggered when a promote event is issued. This event can be launched via the Drone UI (see first image below) and will allow to deploy our artifact in production as we can see at the top of the second image below.
+
+![Promote](images/promote.png)
+
+> We also pass the backend URL to the frontend to be able to fetch the data, thanks to a enviroment variable during the build.
+
+![build](images/build.png)
+
+> On the image above, you can see the name of the different stages of the pipeline.
+
+```yml
+volumes:
+- name: cache
+  temp: {}
+```
+
+As seen above, our volume named `cache` is a temporary volume and this is where we declare it as such (with the `temp` tag). It is possible to give parameters for the volume in the `temp` tag to, for example, create the volume as a temporary one as we did using the default `{}` value.
+
+Docker temporary volumes are created before the pipeline starts and are destroyed after the pipeline is executed.
+
+### Configuration of bucket security
+
+In order for the S3 bucket to be accessible to all clients who would like to access the application, we have configured the access policies with the following code:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::cloudintegration-efrei/*"
+        }
+    ]
+}
+```
+
+This gives everyone read access to the contents of the bucket.
 
 ## Deploy to Beanstalk
 
@@ -107,9 +282,10 @@ SCREEN HERE
 
 ## CORS
 
-Les règles CORS (Cross Origin Resource Sharing) sont un ensemble de standard qui régissent l'accès à des ressources situées sur des domaines différents et permettent de sélectionner les en-têtes accessibles.
+CORS (Cross Origin Resource Sharing) rules are a set of standards that govern access to resources located on different domains and allow to select the accessible headers.
 
-En ayant un frontend et backend ségaré et n'utilisant pas le localhost, nous avons remarqué que certains en-têtes étaient bloqués par les CORS. Ainsi nous avons dû créer une Cache Policy et une Origin Policy afin de permettre la transmission des en-têtes.
+Having a separate frontend and backend and not using the localhost, we noticed that some headers were blocked by CORS. So we had to create a Cache Policy and an Origin Policy to allow the transmission of the headers.
+CORS (Cross Origin Resource Sharing) rules are a set of standards that govern access to resources located on different domains and allow to select the accessible headers.
 
 # Installation Steps
 
