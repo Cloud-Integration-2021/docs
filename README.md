@@ -5,9 +5,10 @@ date: 25/11/2021
 ---
 
 *This document is generated automatically at each commit thanks to Drone CI*
-See here for more information about CI : https://drone.io/
 
-All code source is available at **[Github](https://github.com/Cloud-Integration-2021)**, each lab has a readme and a installation steps
+See here for more information about CI : **[https://drone.io/](https://drone.io/)**
+
+All code source is available on **[Github](https://github.com/Cloud-Integration-2021)**, each repository has its own readme and installation steps.
 
 ![Stack](images/stack.png)
 
@@ -60,7 +61,9 @@ But if the service B is down, the circuit breaker will open. And request will be
     "id": 26,
     "title": "Interstellar",
     "releaseDate": "2014-10-07",
-    "plot": "Interstellar is a 2014 epic science fiction film co-written, directed and produced by Christopher Nolan. It stars Matthew McConaughey, Anne Hathaway, Jessica Chastain, Bill Irwin, Ellen Burstyn, and Michael Caine.",
+    "plot": "Interstellar is a 2014 epic science fiction film co-written, directed and 
+	produced by Christopher Nolan. It stars Matthew McConaughey, Anne Hathaway, 
+	Jessica Chastain, Bill Irwin, Ellen Burstyn, and Michael Caine.",
     "actors": [
       {
         "firstName": "Doe",
