@@ -41,7 +41,9 @@ If service B (provide actors list) is up, the circuit breaker will close. And re
     "id": 26,
     "title": "Interstellar",
     "releaseDate": "2014-10-07",
-    "plot": "Interstellar is a 2014 epic science fiction film co-written, directed and produced by Christopher Nolan. It stars Matthew McConaughey, Anne Hathaway, Jessica Chastain, Bill Irwin, Ellen Burstyn, and Michael Caine.",
+    "plot": "Interstellar is a 2014 epic science fiction film co-written, directed and 
+	produced by Christopher Nolan. It stars Matthew McConaughey, Anne Hathaway, 
+	Jessica Chastain, Bill Irwin, Ellen Burstyn, and Michael Caine.",
     "actors": [
       {
         "firstName": "Ellen",
@@ -243,6 +245,8 @@ We want the pipeline to be triggered when a promote event is issued. This event 
 ![Promote](images/promote.png)
 
 > We also pass the backend URL to the frontend to be able to fetch the data, thanks to a enviroment variable during the build.
+
+\newpage{}
 
 ![build](images/build.png)
 
