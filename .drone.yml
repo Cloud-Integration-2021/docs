@@ -16,6 +16,7 @@ steps:
   commands:
   - mv /drone/src/README.md /drone/src/output
   - mv /drone/src/images /drone/src/output
+  - ls /drone/src/output
   - mdtopdf /drone/src/output/README.md
 
 - name: publish a release
