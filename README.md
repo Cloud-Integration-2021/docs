@@ -9,7 +9,7 @@ See here for more information about CI : https://drone.io/
 
 All code source is available at **[Github](https://github.com/Cloud-Integration-2021)**. Each lab has a readme and a installation steps
 
-[Stack](images/stack.png)
+![Stack](images/stack.png)
 
 # Lab1 - Java API Rest
 *Using Spring boot, Hibernate and JPA with PostgreSQL, Swagger*
