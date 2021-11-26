@@ -15,8 +15,6 @@ steps:
     path: /drone/src/output
   commands:
   - mv /drone/src/README.md /drone/src/output
-  - mv /drone/src/images /drone/src/output
-  - ls /drone/src/output/images
   - ls 
   - mdtopdf /drone/src/output/README.md
 
