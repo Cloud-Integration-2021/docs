@@ -8,7 +8,7 @@ date: 25/11/2021
 *This document is generated automatically at each commit thanks to Drone CI*
 See here for more information about CI : https://drone.io/
 
-All code source is available at [Github](https://github.com/Cloud-Integration-2021). Each lab has a readme and a installation steps
+All code source is available at **[Github](https://github.com/Cloud-Integration-2021)**. Each lab has a readme and a installation steps
 
 ## Lab1 - Java API Rest
 *Using Spring boot, Hibernate and JPA with PostgreSQL, Swagger*
@@ -42,6 +42,7 @@ Spring profile to use H2 in tests
 
 ### CI 
 
+**[See here](https://raw.githubusercontent.com/Cloud-Integration-2021/lab1/main/.drone.yml)**
 ------Integration, building image, pushing image to registry are done with CI.  
 
 ## Lab2 - Golang API Rest
@@ -67,6 +68,8 @@ Integration, building image, pushing image to registry are done with CI.
 
 ### CI 
 
+**[See here](https://raw.githubusercontent.com/Cloud-Integration-2021/lab2/main/.drone.yml)**
+
 ## Lab3 - React Web App
 *Using tailwind*
 
@@ -77,7 +80,7 @@ SCREEN HERE
 
 ### CI 
 
-[See here](https://raw.githubusercontent.com/Cloud-Integration-2021/lab3/main/.drone.yml)
+**[See here](https://raw.githubusercontent.com/Cloud-Integration-2021/lab3/main/.drone.yml)**
 
 There are 3 pipelines :
 
@@ -87,7 +90,7 @@ There are 3 pipelines :
 
 - *Deploy to S3* : trigger on every promote. This pipeline will build application and use static build to push it to S3.
 
-Promote is done in Drone UI. [See here](https://readme.drone.io/promote/)
+**[Promote is done in Drone UI](https://readme.drone.io/promote/)**
 
 ## Lab4 - Deploy to AWS
 ### Deploy to S3
@@ -135,4 +138,4 @@ $ docker-compose up
 
 ## License
 
-[MIT](https://github.com/Cloud-Integration-2021/docs/blob/master/LICENSE)
+**[MIT](https://github.com/Cloud-Integration-2021/docs/blob/master/LICENSE)**
