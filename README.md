@@ -25,6 +25,32 @@ Using CircuitBreaker, Retry, TimeLimiter with annotations. All endpoints dispose
 
 So in fact, Spring root all traffic to service B. If service B is down, the circuit breaker will open. And request will be sent to himself.
 
+```java
+@RequestMapping("/api/v1/movies")
+public class MovieController {
+...
+
+	@GetMapping("")
+    @ApiOperation(value = "List all")
+    @CircuitBreaker(name = "MovieService", fallbackMethod = "getAllFallback")
+    @Retry(name = "MovieService", fallbackMethod = "getAllFallback")
+    @TimeLimiter(name = "MovieService", fallbackMethod = "getAllFallback")
+    public CompletableFuture<ResponseEntity<List<MovieDTO>>> getAll() {
+        ResponseEntity<List<MovieDTO>> resp = restTemplate.exchange(backendA + "/movies", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+        });
+        return CompletableFuture.completedFuture(new ResponseEntity<>(resp.getBody(), resp.getStatusCode()));
+    }
+
+    private CompletableFuture<ResponseEntity<List<MovieDTO>>> getAllFallback(Exception e) {
+        return CompletableFuture.completedFuture(new ResponseEntity<>(movieService.findAll(), HttpStatus.OK));
+    }
+
+...
+}
+```
+
+> On the code above an example of the use of annotations with two methods. The first one *getAll* which will retrieve the GET [/api/v1/movies] traffic and request the B service. If it doesn't answer or doesn't meet the *@Retry* or *@Timelimiter* criteria the traffic will be redirected to the second one *getAllFallback* function
+
 ## V2
 
 Using CircuitBreaker as we saw in *spring-boot-sample*. So all crud operations are managed by Spring boot with no circuitbreaker except *getAll* and *getById*. 
@@ -34,6 +60,36 @@ They are managed by CircuitBreaker : all informations from Movie using JPA repos
 If service B is down, the circuit breaker will open. And request will be sent to himself with default list of actors. 
 
 If service B (provide actors list) is up, the circuit breaker will close. And request will be sent to service B : 
+
+
+```java
+
+private static List<ActorDTO> defaultActors() {
+	return List.of(new ActorDTO("Doe", "John", "2020-12-22"));
+}
+
+public List<ActorDTO> getMovieActors(Long movieId) {
+	var restTemplate = new RestTemplate();
+
+	return circuitBreakerFactory.create("circuitbreaker").run(() -> restTemplate.exchange(
+					backendA + "/movies/" +movieId+ "/actors",
+					HttpMethod.GET,
+					null,
+					new ParameterizedTypeReference<List<ActorDTO>>() {
+					}).getBody()
+			, throwable -> defaultActors());
+}
+
+```
+
+> When calling the getMovieActors method the circuitbreaker will call the backendA and if the service is not available it will return a list of actors already defined 
+
+
+### Demo 
+
+```bash
+$ curl http://localhost:8080/api/v2/movies
+```
 
 ```json
 [
@@ -212,7 +268,17 @@ Integration, building image, pushing image to registry are done with CI.
 
 Web UI using V1 routes from API without actors list. So there are CircuitBreaker and Retry on each route.
 
-SCREEN HERE
+
+![movies list](images/index.png)
+
+> List all movies presents in backend (V1 only no actors). Random image is used [see here](https://source.unsplash.com/random/100x50)
+
+![add movie](images/add.png)
+
+
+![edit movie](images/edit.png)
+
+\newpage{}
 
 
 ## CI 
@@ -246,11 +312,13 @@ We want the pipeline to be triggered when a promote event is issued. This event 
 
 > We also pass the backend URL to the frontend to be able to fetch the data, thanks to a enviroment variable during the build.
 
-\newpage{}
-
 ![build](images/build.png)
 
 > On the image above, you can see the name of the different stages of the pipeline.
+
+
+\newpage{}
+
 
 ```yml
 volumes:
