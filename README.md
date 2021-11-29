@@ -36,13 +36,20 @@ public class MovieController {
     @Retry(name = "MovieService", fallbackMethod = "getAllFallback")
     @TimeLimiter(name = "MovieService", fallbackMethod = "getAllFallback")
     public CompletableFuture<ResponseEntity<List<MovieDTO>>> getAll() {
-        ResponseEntity<List<MovieDTO>> resp = restTemplate.exchange(backendA + "/movies", HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+        ResponseEntity<List<MovieDTO>> resp = restTemplate.exchange(backendA + "/movies", 
+			HttpMethod.GET, 
+			null, 
+			new ParameterizedTypeReference<>() {
         });
-        return CompletableFuture.completedFuture(new ResponseEntity<>(resp.getBody(), resp.getStatusCode()));
+        return CompletableFuture.completedFuture(
+			new ResponseEntity<>(resp.getBody(), resp.getStatusCode())
+		);
     }
 
     private CompletableFuture<ResponseEntity<List<MovieDTO>>> getAllFallback(Exception e) {
-        return CompletableFuture.completedFuture(new ResponseEntity<>(movieService.findAll(), HttpStatus.OK));
+        return CompletableFuture.completedFuture(
+			new ResponseEntity<>(movieService.findAll(), HttpStatus.OK)
+		);
     }
 
 ...
@@ -67,7 +74,9 @@ public class CircuitBreakerConfiguration {
     @Bean
     public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-                .timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(500)).build())
+                .timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(
+					Duration.ofMillis(500)).build()
+				)
                 .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
                 .build());
     }
