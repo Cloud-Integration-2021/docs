@@ -57,10 +57,22 @@ Using CircuitBreaker as we saw in *spring-boot-sample*. So all crud operations a
 
 They are managed by CircuitBreaker : all informations from Movie using JPA repository, but actors list will be managed by service B. 
 
-If service B is down, the circuit breaker will open. And request will be sent to himself with default list of actors. 
+If service B is down or slow, the circuit breaker will open. And request will be sent to himself with default list of actors. 
 
 If service B (provide actors list) is up, the circuit breaker will close. And request will be sent to service B : 
 
+
+```java
+public class CircuitBreakerConfiguration {
+    @Bean
+    public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
+        return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
+                .timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(500)).build())
+                .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+                .build());
+    }
+}
+```
 
 ```java
 
@@ -133,6 +145,38 @@ But if the service B is down, the circuit breaker will open. And request will be
 ]
 ```
 
+If the service B is slow, the circuit breaker will open. And request will be sent to himself. With default actors list.
+
+```go
+func FindActorsByMovieId(c *gin.Context) {
+	time.Sleep(1 * time.Second)
+	c.JSON(http.StatusOK, models.GenerateRandomActors())
+}
+```
+
+```bash
+$ curl http://localhost:8080/api/v2/movies
+```
+
+```json
+[
+  {
+    "id": 26,
+    "title": "Interstellar",
+    "releaseDate": "2014-10-07",
+    "plot": "Interstellar is a 2014 epic science fiction film co-written, directed and 
+	produced by Christopher Nolan. It stars Matthew McConaughey, Anne Hathaway, 
+	Jessica Chastain, Bill Irwin, Ellen Burstyn, and Michael Caine.",
+    "actors": [
+      {
+        "firstName": "Doe",
+        "lastName": "John",
+        "birthDate": "2020-12-22"
+      }
+    ]
+  }
+]
+```
 
 ```java
 private static List<ActorDTO> defaultActors() {
@@ -236,7 +280,7 @@ public class MovieV2ControllerIntegrationTest {}
 
 **[See here](https://github.com/Cloud-Integration-2021/lab1/blob/main/.drone.yml)**
 
-------Integration, building image, pushing image to registry are done with CI.  
+Integration tests, building image, pushing image to registry are done with CI.  
 
 # Lab2 - Golang API Rest
 *Using Gin framework, Gorm with PostgreSQL*
@@ -261,7 +305,7 @@ But with a new endpoint for actors and no persistent storage of actors : Geneart
 
 **[See here](https://github.com/Cloud-Integration-2021/lab2/blob/main/.drone.yml)**
 
-Integration, building image, pushing image to registry are done with CI.  
+Building image, pushing image to registry are done with CI.  
 
 ## Lab3 - React Web App
 *Using tailwind*
