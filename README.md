@@ -257,11 +257,11 @@ But with a new endpoint for actors and no persistent storage of actors : Geneart
 	r.GET("/actors/:id", v2.FindActorsByMovieId)
 ```
 
-Integration, building image, pushing image to registry are done with CI.  
-
 ## CI 
 
 **[See here](https://github.com/Cloud-Integration-2021/lab2/blob/main/.drone.yml)**
+
+Integration, building image, pushing image to registry are done with CI.  
 
 ## Lab3 - React Web App
 *Using tailwind*
