@@ -25,6 +25,9 @@ Using CircuitBreaker, Retry, TimeLimiter with annotations. All endpoints dispose
 
 So in fact, Spring root all traffic to service B. If service B is down, the circuit breaker will open. And request will be sent to himself using the fallback method.
 
+<div style="page-break-after: always;"></div>
+ 
+
 ```java
 @RequestMapping("/api/v1/movies")
 public class MovieController {
@@ -68,6 +71,7 @@ If service B is down or slow, the circuit breaker will open. And request will be
 
 If service B (provide actors list) is up, the circuit breaker will close. And request will be sent to service B : 
 
+<div style="page-break-after: always;"></div>
 
 ```java
 public class CircuitBreakerConfiguration {
@@ -109,6 +113,8 @@ public List<ActorDTO> getMovieActors(Long movieId) {
 ```bash
 $ curl http://localhost:8080/api/v2/movies
 ```
+<div style="page-break-after: always;"></div>
+
 
 ```json
 [
@@ -151,6 +157,8 @@ But if the service B is down, the circuit breaker will open. And request will be
   }
 ]
 ```
+
+<div style="page-break-after: always;"></div>
 
 If the service B is slow, the circuit breaker will open. And request will be sent to himself. With default actors list.
 
@@ -198,6 +206,7 @@ private static List<ActorDTO> defaultActors() {
 Each version has a different integration test. No unit test decause we using JPA default repository.
 
 Due to TimeLimiter, integration tests needs to be asynchronous.
+<div style="page-break-after: always;"></div>
 
 V1 Tests **[see more](https://github.com/Cloud-Integration-2021/lab1/blob/master/src/test/java/fr/lacazethomas/lab1/MovieControllerIntegrationTest.java)**:
 ```java
@@ -230,6 +239,7 @@ public void getMovies() throws Exception {
 			.andExpect(jsonPath("$[1].releaseDate", is("2020-01-08")));
 }
 ```
+<div style="page-break-after: always;"></div>
 
 The same test in V2 with actors testing **[see more](https://github.com/Cloud-Integration-2021/lab1/blob/master/src/test/java/fr/lacazethomas/lab1/MovieV2ControllerIntegrationTest.java)**:
 
@@ -291,6 +301,9 @@ public class MovieV2ControllerIntegrationTest {}
 
 Integration tests, building image, pushing image to registry are done with CI.  
 
+<div style="page-break-after: always;"></div>
+
+
 # Lab2 - Golang API Rest
 *Using Gin framework, Gorm with PostgreSQL*
 
@@ -323,6 +336,8 @@ func (DB *Database) CreateMovie(c *gin.Context) {
 	c.JSON(http.StatusOK, Movie)
 }
 ```
+
+<div style="page-break-after: always;"></div>
 
 ## V2
 
@@ -368,6 +383,9 @@ func generateRandomActor()(a Actor){
 
 Building image, pushing image to registry are done with CI.  
 
+<div style="page-break-after: always;"></div>
+
+
 ## Lab3 - React Web App
 *Using tailwind*
 
@@ -385,11 +403,10 @@ Web UI using V1 routes from API without actors list. So there are CircuitBreaker
 
 
 
-In video folder, you have a example of the first version of API with annotation fallback. 
+In video folder, you have a example of the first vers ion of API with annotation fallback. 
 
 **See videos in videos/** 
 
-\newpage{}
 
 
 ## CI 
@@ -405,6 +422,9 @@ There are 3 pipelines :
 - *Deploy to S3* : trigger on every promote. This pipeline will build application and use static build to push it to S3.
 
 **[Promote is done in Drone UI](https://readme.drone.io/promote/)**
+
+<div style="page-break-after: always;"></div>
+
 
 # Lab4 - Deploy to AWS
 ## Deploy to S3
@@ -428,9 +448,6 @@ We want the pipeline to be triggered when a promote event is issued. This event 
 > On the image above, you can see the name of the different stages of the pipeline.
 
 
-\newpage{}
-
-
 ```yml
 volumes:
 - name: cache
@@ -440,6 +457,8 @@ volumes:
 As seen above, our volume named `cache` is a temporary volume and this is where we declare it as such (with the `temp` tag). It is possible to give parameters for the volume in the `temp` tag to, for example, create the volume as a temporary one as we did using the default `{}` value.
 
 Docker temporary volumes are created before the pipeline starts and are destroyed after the pipeline is executed.
+
+<div style="page-break-after: always;"></div>
 
 ### Configuration of bucket security
 
@@ -461,6 +480,9 @@ In order for the S3 bucket to be accessible to all clients who would like to acc
 ```
 
 This gives everyone read access to the contents of the bucket.
+
+<div style="page-break-after: always;"></div>
+ 
 
 ## Deploy Backends
 
@@ -508,6 +530,8 @@ services:
         - mailcow-network
         - internal
 ```
+<div style="page-break-after: always;"></div>
+
 
 ## CORS
 
