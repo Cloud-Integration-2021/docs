@@ -4,7 +4,7 @@ author: 'Thomas LACAZE'
 date: 25/11/2021
 ---
 
-*This document is generated automatically at each commit thanks to Drone CI*
+*This document is generated automatically at each release thanks to Drone CI*
 
 See here for more information about CI : **[https://drone.io/](https://drone.io/)**
 
