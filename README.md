@@ -294,7 +294,9 @@ Integration tests, building image, pushing image to registry are done with CI.
 # Lab2 - Golang API Rest
 *Using Gin framework, Gorm with PostgreSQL*
 
-It's a replication of the previous API but in Golang. With CRUD operations on movies.
+## V1
+
+It's a replication of the previous API but in Golang. With CRUD operations on movies. Using also PostgreSQL with Gorm ORM.
 
 ```go
 	r.GET("/movies", DB.FindMovies)
@@ -304,10 +306,60 @@ It's a replication of the previous API but in Golang. With CRUD operations on mo
 	r.DELETE("/movies/:id", DB.DeleteMovie)
 ```
 
-But with a new endpoint for actors and no persistent storage of actors : Genearte a random list of actors for a movie.
+Here is an example of how to process an API call :
+```go
+func (DB *Database) CreateMovie(c *gin.Context) {
+	// Validate input
+	var input CreateMovieInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Create Movie
+	Movie := models.Movie{Title: input.Title, ReleaseDate: input.ReleaseDate, Plot: input.Plot}
+	DB.Create(&Movie)
+
+	c.JSON(http.StatusOK, Movie)
+}
+```
+
+## V2
+
+The V2 endpoint is for actors only and no persistent storage of actors. It generate a random list of actors for a movie. Thanks to [gofakeit](https://github.com/brianvoe/gofakeit) package.
 
 ```go
 	r.GET("/actors/:id", v2.FindActorsByMovieId)
+```
+
+```go
+func FindActorsByMovieId(c *gin.Context) {
+	c.JSON(http.StatusOK, models.GenerateRandomActors())
+}
+
+```
+
+Here are the functions associated to the actors models allowing to generate random data
+```go
+func GenerateRandomActors()(actors []Actor){
+
+	randomNumber := gofakeit.Number(1,10)
+
+	for i := 0; i < randomNumber; i++ {
+		actors = append(actors, generateRandomActor())
+	}
+
+	return
+}
+
+func generateRandomActor()(a Actor){
+
+	a.FirstName = gofakeit.FirstName()
+	a.LastName = gofakeit.LastName()
+	a.BirthDate = gofakeit.Date().Format("2006-01-02")
+
+	return
+}
 ```
 
 ## CI 
@@ -330,6 +382,8 @@ Web UI using V1 routes from API without actors list. So there are CircuitBreaker
 
 
 ![edit movie](images/edit.png)
+
+**See videos in videos/** 
 
 \newpage{}
 
@@ -404,9 +458,9 @@ In order for the S3 bucket to be accessible to all clients who would like to acc
 
 This gives everyone read access to the contents of the bucket.
 
-## Deploy to Beanstalk
+## Deploy Backends
 
-SCREEN HERE
+To allow the s3 bucket to retrieve data from the backends, I used a reverse proxy (traefik) to expose the containers via a subdomain. 
 
 ## CORS
 
