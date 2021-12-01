@@ -15,7 +15,7 @@ All code source is available on **[Github](https://github.com/Cloud-Integration-
 # Lab1 - Java API Rest
 *Using Spring boot, Hibernate and JPA with PostgreSQL, Swagger*
 
-CRUD operations on movies. With CircuitBreaker, Retry and Timeout. 
+CRUD operations on movie. With CircuitBreaker, Retry and Timeout. 
 
 There are two version of this API:
 
@@ -23,7 +23,7 @@ There are two version of this API:
 
 Using CircuitBreaker, Retry, TimeLimiter with annotations. All endpoints disposes of a circuit breaker, retry and only *getAll* and *getById* has TimeLimiter.
 
-So in fact, Spring root all traffic to service B. If service B is down, the circuit breaker will open. And request will be sent to himself.
+So in fact, Spring root all traffic to service B. If service B is down, the circuit breaker will open. And request will be sent to himself using the fallback method.
 
 ```java
 @RequestMapping("/api/v1/movies")
@@ -84,7 +84,6 @@ public class CircuitBreakerConfiguration {
 ```
 
 ```java
-
 private static List<ActorDTO> defaultActors() {
 	return List.of(new ActorDTO("Doe", "John", "2020-12-22"));
 }
@@ -100,10 +99,9 @@ public List<ActorDTO> getMovieActors(Long movieId) {
 					}).getBody()
 			, throwable -> defaultActors());
 }
-
 ```
 
-> When calling the getMovieActors method the circuitbreaker will call the backendA and if the service is not available it will return a list of actors already defined 
+> When getMovieActors method is called the circuitbreaker will call the backendA and if the service is not available it will return a list of actors already defined 
 
 
 ### Demo 
@@ -193,6 +191,8 @@ private static List<ActorDTO> defaultActors() {
 }
 ```
 
+**See videos in videos/ folder** 
+
 ## Integration tests
 
 Each version has a different integration test. No unit test decause we using JPA default repository.
@@ -266,7 +266,7 @@ public void getMoviesWithActors() throws Exception {
 }
 ```
 
-Using a remote database in a CI can cause problems. This is why we have chosen to have two spring profiles. One that allows tests to be run in an H2 database and another by default that allows the use of PostgreSQL. 
+Using a remote database in a CI can cause problems. This is why we have chosen to have two spring profiles. One that allows tests to be run in an H2 database and another by default that allows the use of PostgreSQL. The best way can be using temporary databases in pipeline.
 
 In **[/src/test/resources/application.yml](https://github.com/Cloud-Integration-2021/lab1/blob/master/src/test/resources/application.yml)** :
 ```yml
@@ -339,7 +339,7 @@ func FindActorsByMovieId(c *gin.Context) {
 
 ```
 
-Here are the functions associated to the actors models allowing to generate random data
+Here are the function associated to the actors models allowing to generate random data
 ```go
 func GenerateRandomActors()(actors []Actor){
 
@@ -382,6 +382,10 @@ Web UI using V1 routes from API without actors list. So there are CircuitBreaker
 
 
 ![edit movie](images/edit.png)
+
+
+
+In video folder, you have a example of the first version of API with annotation fallback. 
 
 **See videos in videos/** 
 
@@ -460,10 +464,9 @@ This gives everyone read access to the contents of the bucket.
 
 ## Deploy Backends
 
-To allow the s3 bucket to retrieve data from the backends, I used a reverse proxy (traefik) to expose the containers via a subdomain. 
+To allow the s3 bucket to retrieve data from the backends, we used a reverse proxy (traefik) to expose the containers via a subdomain. 
 
-
-Docker-compose.yml:
+Docker-compose.yml
 ```yml
 version: '2.1'
 services:
@@ -536,7 +539,6 @@ r.Use(cors.New(cors.Config{
 	MaxAge: 12 * time.Hour,
 }))
 ```
-
 
 # Installation Steps
 
