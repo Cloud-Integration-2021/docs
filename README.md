@@ -462,12 +462,81 @@ This gives everyone read access to the contents of the bucket.
 
 To allow the s3 bucket to retrieve data from the backends, I used a reverse proxy (traefik) to expose the containers via a subdomain. 
 
+
+Docker-compose.yml:
+```yml
+version: '2.1'
+services:
+    lab2:
+      image: thomaslacaze/lab2
+      container_name: lab2
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+      restart: unless-stopped
+      environment:
+        - ENV=dev
+        - DB_HOST=${CLOUDINTEGRATION_DB_HOST}
+        - DB_PORT=${CLOUDINTEGRATION_DB_PORT}
+        - DB_USER=${CLOUDINTEGRATION_DB_USER}
+        - DB_PASSWORD=${CLOUDINTEGRATION_DB_PASSWORD}
+        - DB_NAME=${CLOUDINTEGRATION_DB_NAME}
+      ports:
+        - 8083:8081
+      networks:
+        - internal
+
+    lab1:
+      image: thomaslacaze/lab1
+      container_name: lab1
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+      restart: unless-stopped
+      environment:
+        - backendA=http://lab2:8081
+        - DATASOURCE_DB_PASSWORD=${CLOUDINTEGRATION_DB_PASSWORD}
+        - DATASOURCE_DB_USERNAME=${CLOUDINTEGRATION_DB_USER}
+        - DATASOURCE_DB_URL=${CLOUDINTEGRATION_DATASOURCE_DB_URL}
+      depends_on:
+        - lab2
+      labels:
+        - traefik.http.routers.lab1.rule=Host(`lab1.thomaslacaze.fr`)
+        - traefik.http.services.lab1.loadbalancer.server.port=8080
+      networks:
+        - mailcow-network
+        - internal
+```
+
 ## CORS
 
 CORS (Cross Origin Resource Sharing) rules are a set of standards that govern access to resources located on different domains and allow to select the accessible headers.
 
 Having a separate frontend and backend and not using the localhost, we noticed that some headers were blocked by CORS. So we had to create a Cache Policy and an Origin Policy to allow the transmission of the headers.
 CORS (Cross Origin Resource Sharing) rules are a set of standards that govern access to resources located on different domains and allow to select the accessible headers.
+
+In Java project:
+```java
+@CrossOrigin(origins = "*", maxAge = 3600)
+public class MovieController {
+}
+```
+
+
+In Golang project:
+```go
+r := gin.Default()
+r.Use(cors.New(cors.Config{
+	AllowOrigins:     []string{"*"},
+	AllowMethods:     []string{"PUT", "PATCH", "GET", "POST"},
+	AllowHeaders:     []string{"Origin"},
+	ExposeHeaders:    []string{"Content-Length"},
+	AllowCredentials: true,
+	AllowOriginFunc: func(origin string) bool {
+		return origin == "*"
+	},
+	MaxAge: 12 * time.Hour,
+}))
+```
+
 
 # Installation Steps
 
