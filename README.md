@@ -4,9 +4,7 @@ author: 'Thomas LACAZE'
 date: 25/11/2021
 ---
 
-*This document is generated automatically at each release thanks to Drone CI*
-
-See here for more information about CI : **[https://drone.io/](https://drone.io/)**
+# Report Labs Cloud Integration - Thomas LACAZE DT M2 2022
 
 All code source is available on **[Github](https://github.com/Cloud-Integration-2021)**, each repository has its own readme and installation steps.
 
@@ -301,8 +299,23 @@ public class MovieV2ControllerIntegrationTest {}
 
 Integration tests, building image, pushing image to registry are done with CI.  
 
-<div style="page-break-after: always;"></div>
+## Dockerfile
 
+```dockerfile
+FROM gradle:jdk11 AS build
+COPY . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle build --no-daemon 
+
+
+FROM openjdk:11.0.13
+EXPOSE 8080
+RUN mkdir /app
+COPY --from=build /home/gradle/src/build/libs/lab1-0.0.1-SNAPSHOT.jar /app/spring-boot-application.jar
+ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-Djava.security.egd=file:/dev/./urandom","-jar","/app/spring-boot-application.jar"]
+```
+
+<div style="page-break-after: always;"></div>
 
 # Lab2 - Golang API Rest
 *Using Gin framework, Gorm with PostgreSQL*
@@ -385,6 +398,26 @@ Building image, pushing image to registry are done with CI.
 
 <div style="page-break-after: always;"></div>
 
+## Dockerfile
+
+```dockerfile
+FROM golang:alpine3.13 as builder
+
+RUN apk update && apk add git
+COPY . $GOPATH/src/github.com/lab2/
+WORKDIR $GOPATH/src/github.com/lab2/
+RUN go build -o /go/bin/lab2
+
+ENV ENVIRONMENT prod
+
+FROM alpine:3.13.1
+EXPOSE 8081
+COPY --from=builder /go/bin/lab2 /bin/lab2
+
+ENTRYPOINT ["/bin/lab2"]
+```
+
+<div style="page-break-after: always;"></div>
 
 ## Lab3 - React Web App
 *Using tailwind*
@@ -423,8 +456,24 @@ There are 3 pipelines :
 
 **[Promote is done in Drone UI](https://readme.drone.io/promote/)**
 
-<div style="page-break-after: always;"></div>
+## Dockerfile
 
+```dockerfile
+
+FROM node:14.18.1-alpine as build
+WORKDIR /app
+
+ENV REACT_APP_BACKEND_URL http://localhost:8080
+ENV PATH /app/node_modules/.bin:$PATH
+COPY package.json ./
+RUN yarn install
+COPY . ./
+
+EXPOSE 3000
+CMD ["yarn", "start"]
+```
+
+<div style="page-break-after: always;"></div>
 
 # Lab4 - Deploy to AWS
 ## Deploy to S3
@@ -594,6 +643,67 @@ CLOUDINTEGRATION_DATASOURCE_DB_URL_LAB1=jdbc:postgresql://**:**/**
 
 ```bash
 $ docker-compose up
+```
+## Sample of docker-compose.yml
+
+```yml
+version: '2.1'
+services:
+    lab3:
+      image: thomaslacaze/lab3:1.0.0
+      container_name: lab3
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+      restart: unless-stopped
+      environment: 
+        - REACT_APP_BACKEND_URL=https://lab1:8080
+      ports:
+        - 3020:3000
+      networks:
+        - internal
+        - external
+
+    lab2:
+      image: thomaslacaze/lab2:1.0.0
+      container_name: lab2
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+      restart: unless-stopped
+      environment: 
+        - ENV=dev
+        - DB_HOST=${CLOUDINTEGRATION_DB_HOST}
+        - DB_PORT=${CLOUDINTEGRATION_DB_PORT}
+        - DB_USER=${CLOUDINTEGRATION_DB_USER}
+        - DB_PASSWORD=${CLOUDINTEGRATION_DB_PASSWORD}
+        - DB_NAME=${CLOUDINTEGRATION_DB_NAME_LAB2}
+      networks:
+        - internal
+
+    lab1:
+      image: thomaslacaze/lab1:1.0.0
+      container_name: lab1
+      volumes:
+        - /etc/localtime:/etc/localtime:ro
+      restart: unless-stopped
+      environment:
+        - backendA=http://lab2:8081
+        - DATASOURCE_DB_PASSWORD=${CLOUDINTEGRATION_DB_PASSWORD}
+        - DATASOURCE_DB_USERNAME=${CLOUDINTEGRATION_DB_USER}
+        - DATASOURCE_DB_URL=${CLOUDINTEGRATION_DATASOURCE_DB_URL_LAB1}
+      depends_on:
+        - lab2
+      ports:
+        - 8080:8080
+      networks:
+        - internal
+        - external
+
+
+networks:
+  internal:
+    external: false
+  external:
+    external: true
 ```
 
 # License
